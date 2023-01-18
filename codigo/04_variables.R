@@ -93,7 +93,7 @@ write.csv(df_salida,"D:/Josefina/Proyectos/salud/movilidad_7/df_salida_1.csv")
 
 setwd("D:/Josefina/Proyectos/salud/movilidad_7/salidas_ejemplo")
 
-# ------------08 Guardamos el html
+# ------------08 Guardamos el html en la carpeta
 htmlwidgets::saveWidget(prueba_FINAL , "Ejemplo_exposicion-final.html")
 
 # 
