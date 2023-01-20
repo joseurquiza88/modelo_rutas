@@ -27,15 +27,11 @@ points_to_line <- function(data, long, lat, id_field = NULL, sort_field = NULL) 
     paths <- sp::split(data, data[[id_field]])
     
     sp_lines <- SpatialLines(list(Lines(list(Line(paths[[1]])), "line1")))
-    #sp_lines2 <- SpatialLines(list(Lines(list(Line(paths[[1]])), "line1")))
-    
-    
-    #plot(mypoints, axes=TRUE)
     
     # I like for loops, what can I say...
     for (p in 2:length(paths)) {
       id <- paste0("line", as.character(p))
-      #print(id)
+
       
       l <- SpatialLines(list(Lines(list(Line(paths[[p]])), id)))
       

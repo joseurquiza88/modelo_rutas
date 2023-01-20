@@ -10,15 +10,21 @@
 
 ##
 alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
-                                    key,salida, seleccion){
+                                    key,salida, seleccion,horario){
 # ------------             BUSQUEDA DE RECORRIDOS      ---------------- 
 # Busqueda de alternativas segun tom-tom
-  recorridos_tomtom <- function(origen,destino,modo){
+  recorridos_tomtom <- function(origen,destino,modo,horario_recorrido){
     df_rbind <- data.frame()
     num_alternativas<-5
     resp_df_competo <- data.frame()
+    #---  Horario de departure
+    dia<- substr (horario_recorrido,1,10)
+    hora <- substr(horario_recorrido,12,13)
+    minutos <- substr(horario_recorrido,15,16)
+    horario_format <- paste(dia,"T",hora,"%3A",minutos,"%3A00-03%3A00",sep = "")
+
     url_part_1 <- "https://api.tomtom.com/routing/1/calculateRoute/" 
-    url_part_2 <- paste("/json?maxAlternatives=",num_alternativas,"&routeRepresentation=polyline&computeTravelTimeFor=all&routeType=fastest&traffic=true&travelMode=",sep="" )
+    url_part_2 <- paste("/json?maxAlternatives=",num_alternativas,"&departAt=",horario_format,"&routeRepresentation=polyline&computeTravelTimeFor=all&routeType=fastest&traffic=true&travelMode=",sep="" )
     #--- Tipos de recorrido - ingles-español
     if (modo =="Camion"){
       mode_transp <- "truck"
@@ -47,14 +53,13 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     resp_df_competo <- data.frame()
     origin_lat  <- strsplit(origen, ",")[[1]][1]
     origin_long<- strsplit(origen, ",")[[1]][2]
-    
     destination_lat  <- strsplit(destino, ",")[[1]][1]
     destination_long<- strsplit(destino, ",")[[1]][2]
     url<- paste0(url_part_1,origin_lat,"%2C",origin_long,"%3A",destination_lat,"%2C",destination_long,url_part_2,mode_transp,url_part_3,key)
+    #---  Request en la API
     response <- GET(url)
     resp_json <- fromJSON(content(response, as = "text"))
     for (j in 1:length(resp_json[["routes"]][["legs"]])){
-      
         resp<- data.frame( long = resp_json[["routes"]][["legs"]][[j]][["points"]][[1]][["longitude"]],
                            lat = resp_json[["routes"]][["legs"]][[j]][["points"]][[1]][["latitude"]],
                            # --- Tiempo de salida y llegada --
@@ -94,14 +99,10 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
                                    "alternativa")
       return(df_rbind_salida)
   }
-  recorrido<- recorridos_tomtom(origen,destino,modo = modo)
-  
-  # recorrido<- recorridos_tomtom(origen,destino,modo = "car")
-  
+  recorrido<- recorridos_tomtom(origen,destino,modo = modo, horario_recorrido=horario )
+
   # ------------             PASO DE PUNTOS A LINEAS      ----------------
-  # La salida de Tom-tom son puntos. Esta funcion permite transformar los puntos 
-  #en lineas.
-   datos <- recorrido
+  datos <- recorrido
   v_lines <- points_to_line(data = datos, 
                             long = "long", 
                             lat = "lat", 
@@ -150,24 +151,15 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
   df2<-SpatialLinesDataFrame(v_lines, id_df , match.ID = F)
   proj4string(df2) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
   # ------------                  ELECCION DE RUTA         ----------------
-  # Procesamiento de los datos para ver cual es la mas rapida, la corta
-  # la mas contaminada, la menos contaminada
-
   #Guardamos la informacion en un .shp temporal
-   writeOGR(df2,".","temp", driver="ESRI Shapefile")
-    df3 <- st_read("temp.shp")
+   writeOGR(df2,"./temp","temp", driver="ESRI Shapefile")
+    df3 <- st_read("./temp/temp.shp",quiet = TRUE)
+    #---  Busqueda de la grilla de interes segun el horario ingresado
     # Datos de CALPUFF guardados localmente
-    grilla <- st_read(concentraciones_grilla)
-    # Tarda bastante la interseccion 
+    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grilla,formato_hora="%Y-%m-%dT%H:%M:%S")
     interseccion_grilla <- st_intersection(df3,grilla)
-    # Eliminamos el archivo generado
-    # print("Eliminamos archivo generado")
-    # print("Eliminamos archivo generado.")
-    # print("Eliminamos archivo generado..")
-    # print("Eliminamos archivo generado...")
-    print("Archivo eliminado OK")
-    file.remove(file.path("./", dir(path="./" ,pattern="temp.*")))
-    
+    #print("Archivo eliminado OK")
+    file.remove(file.path("./temp", dir(path="./temp" ,pattern="temp.*")))
     interseccion_grilla%>%
       group_by(altrntv) %>% 
       group_split() -> dataSplit_interseccion
@@ -176,12 +168,14 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
       origen <- dataSplit_interseccion[[i]][["origen"]][1]
       destino <- dataSplit_interseccion[[i]][["destino"]][1]
       alternativa<- dataSplit_interseccion[[i]][["altrntv"]][1]
+      dprtrTm<- dataSplit_interseccion[[i]][["dprtrTm"]][1]
+      arrvlTm<-dataSplit_interseccion[[i]][["arrvlTm"]][length(dataSplit_interseccion[[i]])]
       PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["PMDIARIO"]],na.rm=T),2)
       PMHORARIO <- round(mean(dataSplit_interseccion[[i]][["PMHORARIO"]],na.rm=T),2)
-      df <- data.frame(alternativa,PMDIARIO,PMHORARIO)
-      names(df) <- c("alternativa","PMDIARIO","PMHORARIO")
+      df <- data.frame(alternativa,PMDIARIO,PMHORARIO,dprtrTm,arrvlTm)
+      names(df) <- c("alternativa","PMDIARIO","PMHORARIO","dprtrTm","arrvlTm")
       suma_df<- rbind(suma_df,df)
-      names(suma_df) <-c("alternativa","PMDIARIO","PMHORARIO")
+      names(suma_df) <-c("alternativa","PMDIARIO","PMHORARIO","dprtrTm","arrvlTm")
     }
     df_merge <- merge(recorrido,suma_df, #
                       by = "alternativa")
@@ -202,11 +196,8 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     ruta_mas_contaminada <- recorrido[recorrido$PMDIARIO == max(recorrido$PMDIARIO),]
     ruta_mas_contaminada$tipo <- "Mas contaminada"
     # ------------ 0.3 RUTA MAS y MENOS CONTAMINADA
-  #OJO Tarda bastante porque hace intereseccion.
   # Aparecen 2 warnings no darle importancia!
     df_salida <- data.frame()
-    #SALIDA 01 
-    
     # ------- SALIDA DF
     if (salida=="df"){
     df_salida <- rbind(ruta_rapida,ruta_corta,ruta_mas_contaminada,ruta_menos_contaminada)
@@ -214,9 +205,6 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     }
   # ------------                  PLOTEO DE RUTA        ----------------
   # Ploteamos las distintas alternativas consideradas
-  # plot_alternativas <- function (ruta_menos_contaminada,ruta_mas_contaminada,
-  #                                  ruta_corta,ruta_rapida,grilla){
-      # ------------ Transformamos de lineas a puntos
     ruta_menos_contaminada_line<- points_to_line(data = ruta_menos_contaminada, 
                                 long = "long", 
                                 lat = "lat", 
@@ -254,10 +242,8 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     font-size: 18px;
   }
 "))
-      
-      # title <- tags$div(
-      #   tag.map.title, HTML("<b>className=map-title,Alternativas de viaje con el modo: </b>", modo))  
-      title <- tags$div(tag.map.title, #HTML("Alternativas de viaje con el modo:") ) 
+      #  --- Titulo
+     title <- tags$div(tag.map.title, #HTML("Alternativas de viaje con el modo:") ) 
                         HTML(paste("<center><b>Alternativas de viaje con el modo: </b></center>",modo)))
 
     #  --- Contenido del plot
@@ -297,7 +283,6 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
       paleta_grilla <- c("#abdda4","#f8fd66","#fdde61","#d74a4c","#b687ba","#590e63")
       palfac <- colorFactor(paleta_grilla, domain = grilla$categorias)
       # ---  Plot
-    
        mapa <- leaflet() %>%
         addTiles() %>%
         addAwesomeMarkers(
@@ -327,16 +312,10 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
          # Layers control
        addLayersControl(
          overlayGroups = c("Concentraciones","Ruta menos contaminada", "Ruta mas contaminada", "Ruta mas corta","Ruta mas rapida"))#,
-         
-  
-       #options = layersControlOptions(collapsed = FALSE)
-  
-       #return(mapa)
+
        mapa_alternativas <- mapa
        return(mapa_alternativas)
   }
-  # mapa_alternativas <- plot_alternativas(ruta_menos_contaminada,ruta_mas_contaminada,
-  #                                        ruta_corta,ruta_rapida,grilla)
   #################################################################################
   # ------- SALIDA POLYLINE
        if (salida == "polyline"){
