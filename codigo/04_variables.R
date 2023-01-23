@@ -1,5 +1,6 @@
 
 #######################################################################
+# Prueba de la funcion:
 # ------------             ELECCION DE LA MEJOR RUTA     -------------   
 # ------------ VARIABLES   
 # ------------01. Key tom-tom
@@ -56,8 +57,9 @@ write.csv(prueba_alternativas1,"alternativas_recorridos_df.csv")
 
 
 #######################################################################
+# Prueba de la funcion:
 # ------------             ESTIMACION DE EXPOSICION FINAL V02     -------------   
-# ------------ VARIABLES   
+# VARIABLES   
 # ------------01. Key tom-tom
 # CONTRASEÑAS VARIAS CUENTAS DE TOM TOM. 2500 Request por dia cada una
 key_1 <- "L4P6mCEdDjNejIszYS44dMMlW1n9Imzj" #josefina.backup ok
@@ -67,34 +69,39 @@ key_4 <-"2uZZkn5R9YGXTznHS2NPla5ZSJ1NcWbd" #"joseurquiza88"
 key=key_1
 
 # ------------02. Modos de transporte
-modo = c("Auto","Pie","Auto")#,"Auto")
+modo = c("Auto","Pie","Auto")
 
 # ------------03. Lista con Coordenadas de origen-Destino
 
-lista_viaje <- data.frame(long =c(-68.789,-68.864,-68.789,-68.857),
-                         lat = c(-32.88204,-32.91051,-32.87568,-33.03039))
+lista_viaje <- data.frame(long =c(-68.789,-68.864,-68.789),
+                         lat = c(-32.88204,-32.91051,-32.87568))
 
-# ------------04. Grilla de contaminacion local
-directorio_grilla <- "D:/Josefina/Proyectos/salud/movilidad_8/grillas"
+# ------------04. Grilla de contaminacion local. 
+# Contiene las grillas de PM de la salida de CALPUFF
+directorio_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas"
 
 # ------------05. Tipo de ruta seleccionada
-seleccion <- c("Mas rapida","Mas corta","Menos contaminada")#,"Mas rapida")
+seleccion <- c("Menos contaminada","Menos contaminada","Menos contaminada")
 
-## ------------07. Horas de exposicion para los puntos de interes no para la intereseccion
-horas_interes<- c("2023-01-20 07:50:00 -03","2023-01-20 13:10:00 -03","2023-01-20 16:30:00 -03")#,"2023-01-19 09:50:00 -03")
+## ------------07. Horas de Salida de los sitios de interes
+
+horas_interes<- c("2023-01-20 07:50:00 -03","2023-01-20 13:10:00 -03",
+                  "2023-01-20 16:30:00 -03")
 
 
-
+15:22
 # ------------07 Corremos la funcion global
 prueba <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,
                                  seleccion,salida_exp="plot",horario = horas_interes)
+prueba_df <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,
+                           seleccion,salida_exp="df",horario = horas_interes)
 
 #Guardar en en un cv
-write.csv(df_salida,"D:/Josefina/Proyectos/salud/movilidad_7/df_salida_1.csv")
+write.csv(prueba_df,"D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios/prueba_df_exposicion_V2.csv")
 
-setwd("D:/Josefina/Proyectos/salud/movilidad_7/salidas_ejemplo")
+setwd("D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios")
 
 # ------------08 Guardamos el html en la carpeta
-htmlwidgets::saveWidget(prueba, "prueba.html")
+htmlwidgets::saveWidget(prueba, "prueba_plot.html")
 
 # 

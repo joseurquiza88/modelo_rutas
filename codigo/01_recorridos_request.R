@@ -10,21 +10,27 @@
 
 ##
 alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
-                                    key,salida, seleccion,horario){
+                                    key,salida,horario =NULL){
 # ------------             BUSQUEDA DE RECORRIDOS      ---------------- 
 # Busqueda de alternativas segun tom-tom
-  recorridos_tomtom <- function(origen,destino,modo,horario_recorrido){
+  recorridos_tomtom <- function(origen,destino,modo,horario_recorrido=NULL){
     df_rbind <- data.frame()
     num_alternativas<-5
     resp_df_competo <- data.frame()
     #---  Horario de departure
+    if (is.null(horario_recorrido)){
+      horario_recorrido <- Sys.time()
+    }else{
+      horario_recorrido <- horario_recorrido 
+    }
     dia<- substr (horario_recorrido,1,10)
     hora <- substr(horario_recorrido,12,13)
     minutos <- substr(horario_recorrido,15,16)
     horario_format <- paste(dia,"T",hora,"%3A",minutos,"%3A00-03%3A00",sep = "")
 
     url_part_1 <- "https://api.tomtom.com/routing/1/calculateRoute/" 
-    url_part_2 <- paste("/json?maxAlternatives=",num_alternativas,"&departAt=",horario_format,"&routeRepresentation=polyline&computeTravelTimeFor=all&routeType=fastest&traffic=true&travelMode=",sep="" )
+    url_part_2 <- paste("/json?maxAlternatives=",num_alternativas,"&departAt=",horario_format,"&routeRepresentation=polyline&computeTravelTimeFor=all&traffic=true&travelMode=",sep="" )
+    #url_part_2 <- paste("/json?maxAlternatives=",num_alternativas,"&departAt=",horario_format,"&routeRepresentation=polyline&computeTravelTimeFor=all&routeType=fastest&traffic=true&travelMode=",sep="" )
     #--- Tipos de recorrido - ingles-español
     if (modo =="Camion"){
       mode_transp <- "truck"
@@ -156,7 +162,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     df3 <- st_read("./temp/temp.shp",quiet = TRUE)
     #---  Busqueda de la grilla de interes segun el horario ingresado
     # Datos de CALPUFF guardados localmente
-    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grilla,formato_hora="%Y-%m-%dT%H:%M:%S")
+    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grilla = concentraciones_grilla,formato_hora="%Y-%m-%dT%H:%M:%S")
     interseccion_grilla <- st_intersection(df3,grilla)
     #print("Archivo eliminado OK")
     file.remove(file.path("./temp", dir(path="./temp" ,pattern="temp.*")))
@@ -336,15 +342,30 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
            id <- polyline_salida@lines[[p]]@ID
            origen <- origen
            destino <- destino
+           
            departureTime <- dat_agrupado_salida[[p]][["departureTime"]][1]
            arrivalTime<- dat_agrupado_salida[[p]][["arrivalTime"]][1]
            lengthInMeters<- dat_agrupado_salida[[p]][["lengthInMeters"]][1]
            trafficLengthInMeters <- dat_agrupado_salida[[p]][["trafficLengthInMeters"]][1]
            travelMode <- dat_agrupado_salida[[p]][["travelMode"]][1]
+           # El retraso en segundos en comparación con las condiciones de flujo libre según
+           #la información de tráfico en tiempo real.
            trafficDelayInSeconds<-  dat_agrupado_salida[[p]][["trafficDelayInSeconds"]][1]
+          #El tiempo de viaje estimado en segundos. Tenga en cuenta que incluso cuando traffic=false,
+           #travelTimeInSeconds aún incluye el retraso debido al tráfico.
            travelTimeInSeconds<- dat_agrupado_salida[[p]][["travelTimeInSeconds"]][1]
+           
+           #El tiempo de viaje estimado en segundos calculado utilizando datos de 
+           # velocidad en tiempo real.
            liveTrafficIncidentsTravelTimeInSeconds<- dat_agrupado_salida[[p]][["liveTrafficIncidentsTravelTimeInSeconds"]][1]
-           historicTrafficTravelTimeInSeconds <- dat_agrupado_salida[[p]][["historicTrafficTravelTimeInSeconds"]][1]
+           
+           #El tiempo de viaje estimado en segundos calculado utilizando datos de tráfico históricos dependientes del tiempo
+            historicTrafficTravelTimeInSeconds <- dat_agrupado_salida[[p]][["historicTrafficTravelTimeInSeconds"]][1]
+           
+            # noTrafficTravelTimeInSeconds: El tiempo de viaje estimado en segundos calculado
+           # como si no hubiera demoras en la ruta debido a las condiciones del tráfico 
+           # (p. ej., congestión).
+         
            noTrafficTravelTimeInSeconds<- dat_agrupado_salida[[p]][["noTrafficTravelTimeInSeconds"]][1]
            alternativa<-dat_agrupado_salida[[p]][["alternativa"]][1]
            tipo <- dat_agrupado_salida[[p]][["tipo"]][1]
