@@ -14,7 +14,7 @@
 
 #La salida es un data.frame listo para guardar temporalmente en .shp
 
-busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grilla,formato_hora){
+busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato_hora){
   #  --- Funcion que busca la grilla (.shp) correspondiente a la hora de interes ingresada
   # La grilla esta ubicada en una carpeta detaeminada
   grillas_horaria <- function(hora, formato_hora = formato_hora,directorio_grillas){
@@ -33,11 +33,11 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grilla,formato_
   
   #  --- Hay veces que no ingresamos una hora-fin por ejemplo ?¡
   if (is.null(hora_fin)){
-    df_grilla_inicio <- st_read(grillas_horaria(hora_inicio, formato_hora = formato_hora,directorio_grilla),quiet = TRUE)
+    df_grilla_inicio <- st_read(grillas_horaria(hora_inicio, formato_hora = formato_hora,directorio_grillas),quiet = TRUE)
   }
   #  --- Cuando es una sola grilla
   else if (solo_hora_inicio == solo_hora_fin ){
-    grilla_trayecto <- st_read(grillas_horaria(hora_inicio, formato_hora = formato_hora,directorio_grilla),quiet = TRUE)
+    grilla_trayecto <- st_read(grillas_horaria(hora_inicio, formato_hora = formato_hora,directorio_grillas),quiet = TRUE)
   }else{
     #  --- Cuando son varias grillas hacemos una media por pixel
     for(j in solo_hora_inicio:solo_hora_fin){
@@ -50,7 +50,7 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grilla,formato_
       
       dia <- paste(substr(hora_inicio,1,10),paste(j_hora,":00:00",sep = ""), "-03",sep = " ")
       #print (paste("GRILLA", j_hora,sep = " "))#
-      grilla_trayecto <- st_read(grillas_horaria(dia, formato_hora = "%Y-%m-%d %H:%M:%S",directorio_grilla),quiet = TRUE)
+      grilla_trayecto <- st_read(grillas_horaria(dia, formato_hora = "%Y-%m-%d %H:%M:%S",directorio_grillas),quiet = TRUE)
       grilla_trayecto$hora <- dia
       grilla_trayecto_rbind <- rbind(grilla_trayecto_rbind,grilla_trayecto)
     }
@@ -104,4 +104,3 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grilla,formato_
     }
 }
 
-a

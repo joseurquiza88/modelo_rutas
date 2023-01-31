@@ -9,11 +9,11 @@
 
 
 ##
-alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
+alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/salud/movilidad_7/grillas",
                                     key,salida,horario =NULL){
 # ------------             BUSQUEDA DE RECORRIDOS      ---------------- 
 # Busqueda de alternativas segun tom-tom
-  recorridos_tomtom <- function(origen,destino,modo,horario_recorrido=NULL){
+  recorridos_tomtom <- function(origen,destino,modo,horario_recorrido=horario){
     df_rbind <- data.frame()
     num_alternativas<-5
     resp_df_competo <- data.frame()
@@ -162,7 +162,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     df3 <- st_read("./temp/temp.shp",quiet = TRUE)
     #---  Busqueda de la grilla de interes segun el horario ingresado
     # Datos de CALPUFF guardados localmente
-    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grilla = concentraciones_grilla,formato_hora="%Y-%m-%dT%H:%M:%S")
+    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grillas = "D:/Josefina/Proyectos/salud/movilidad_7/grillas",formato_hora="%Y-%m-%dT%H:%M:%S")
     interseccion_grilla <- st_intersection(df3,grilla)
     #print("Archivo eliminado OK")
     file.remove(file.path("./temp", dir(path="./temp" ,pattern="temp.*")))
@@ -178,6 +178,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
       arrvlTm<-dataSplit_interseccion[[i]][["arrvlTm"]][length(dataSplit_interseccion[[i]])]
       PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["PMDIARIO"]],na.rm=T),2)
       PMHORARIO <- round(mean(dataSplit_interseccion[[i]][["PMHORARIO"]],na.rm=T),2)
+
       df <- data.frame(alternativa,PMDIARIO,PMHORARIO,dprtrTm,arrvlTm)
       names(df) <- c("alternativa","PMDIARIO","PMHORARIO","dprtrTm","arrvlTm")
       suma_df<- rbind(suma_df,df)
@@ -187,7 +188,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
                       by = "alternativa")
                         
     recorrido<- df_merge
-  
+    recorrido$exposicion <- round(((recorrido$PMDIARIO * recorrido$liveTrafficIncidentsTravelTimeInSeconds)/60),2)
     # ------------ 01. RUTA MAS RAPIDA
     #Tiempo real con trafico
     ruta_rapida <- recorrido[recorrido$liveTrafficIncidentsTravelTimeInSeconds == min(recorrido$travelTimeInSeconds),]
@@ -198,15 +199,26 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
     # ------------ 03. RUTA MENOS CONTAMINADA
     ruta_menos_contaminada <- recorrido[recorrido$PMDIARIO == min(recorrido$PMDIARIO),]
     ruta_menos_contaminada$tipo <- "Menos contaminada"
-    # ------------ 02. RUTA MAS CONTAMINADA
+    # ------------ 04. RUTA MAS CONTAMINADA
     ruta_mas_contaminada <- recorrido[recorrido$PMDIARIO == max(recorrido$PMDIARIO),]
     ruta_mas_contaminada$tipo <- "Mas contaminada"
-    # ------------ 0.3 RUTA MAS y MENOS CONTAMINADA
+    # ------------ 0.4 Mas exposicion
+    ruta_mas_exposicion <- recorrido[recorrido$exposicion == max(recorrido$exposicion),]
+    ruta_mas_exposicion$tipo <- "Mas exposicion"
+    
+    # ------------ 0.5 Menos exposicion
+    ruta_menos_exposicion <- recorrido[recorrido$exposicion == min(recorrido$exposicion),]
+    ruta_menos_exposicion$tipo <- "Menos exposicion"
+    
+    # ------------ 0.6 Balanceada - tiempo - contaminacion
+    #ruta_balanceada <- recorrido[(recorrido$PMDIARIO == min(recorrido$PMDIARIO)) && (recorrido$liveTrafficIncidentsTravelTimeInSeconds == min(recorrido$travelTimeInSeconds)) ,]
+    #ruta_balanceada$tipo <- "Balanceada"
+    
   # Aparecen 2 warnings no darle importancia!
     df_salida <- data.frame()
     # ------- SALIDA DF
     if (salida=="df"){
-    df_salida <- rbind(ruta_rapida,ruta_corta,ruta_mas_contaminada,ruta_menos_contaminada)
+    df_salida <- rbind(ruta_rapida,ruta_corta,ruta_mas_contaminada,ruta_menos_contaminada,ruta_mas_exposicion,ruta_menos_exposicion)
     return(df_salida)
     }
   # ------------                  PLOTEO DE RUTA        ----------------
@@ -231,6 +243,17 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
                                         lat = "lat", 
                                         id_field = NULL,
                                         sort_field = "ID")
+    
+    ruta_mas_exposicion_line<- points_to_line(data = ruta_mas_exposicion, 
+                                      long = "long", 
+                                      lat = "lat", 
+                                      id_field = NULL,
+                                      sort_field = "ID")
+    ruta_menos_exposicion_line<- points_to_line(data = ruta_menos_exposicion, 
+                                      long = "long", 
+                                      lat = "lat", 
+                                      id_field = NULL,
+                                      sort_field = "ID")
 
     # ------- SALIDA MAPA - PLOT
     #  --- Titulo del mapa
@@ -257,26 +280,45 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
                                 paste0("<center><b>Ruta mas contaminada: </b></center>"),
                                 paste0("<b>Duracion: </b>", ruta_mas_contaminada$travelTimeInSeconds," min"),
                                 paste0("<b>Distancia: </b>", ruta_mas_contaminada$lengthInMeters," km"),
-                                paste0("<b>Concentraciones PM: </b>", ruta_mas_contaminada$PMHORARIO," µg m-3"))
-     
+                                paste0("<b>Concentraciones PM: </b>", ruta_mas_contaminada$PMDIARIO," µg m-3"),
+                                paste0("<b>Exposicion PM: </b>", ruta_mas_contaminada$exposicion," µg m-3/h"))
       content_menos_cont <- paste(sep = "<br/>",
                                 paste0("<center><b>Ruta menos contaminada: </b></center>"),
                                 paste0("<b>Duracion: </b>", ruta_menos_contaminada$travelTimeInSeconds," min"),
                                 paste0("<b>Distancia: </b>", ruta_menos_contaminada$lengthInMeters," km"),
-                                paste0("<b>Concentraciones PM: </b>", ruta_menos_contaminada$PMHORARIO," µg m-3"))
+                                paste0("<b>Concentraciones PM: </b>", ruta_menos_contaminada$PMDIARIO," µg m-3"),
+                                paste0("<b>Exposicion PM: </b>", ruta_menos_contaminada$exposicion," µg m-3/h"))
       
       content_corta <- paste(sep = "<br/>",
                                 paste0("<center><b>Ruta mas contaminada: </b></center>"),
                                 paste0("<b>Duracion: </b>",ruta_corta$travelTimeInSeconds," min"),
                                 paste0("<b>Distancia: </b>", ruta_corta$lengthInMeters," km"),
-                                paste0("<b>Concentraciones PM: </b>", ruta_corta$PMHORARIO," µg m-3"))
+                                paste0("<b>Concentraciones PM: </b>", ruta_corta$PMDIARIO," µg m-3"),
+                             paste0("<b>Exposicion PM: </b>", ruta_corta$exposicion," µg m-3/h"))
       
       content_rapida <- paste(sep = "<br/>",
                                 paste0("<center><b>Ruta mas rapida: </b></center>"),
                                 paste0("<b>Duracion: </b>", ruta_rapida$travelTimeInSeconds," min"),
                                 paste0("<b>Distancia: </b>", ruta_rapida$lengthInMeters," km"),
-                                paste0("<b>Concentraciones PM: </b>", ruta_rapida$PMHORARIO," µg m-3"))
+                                paste0("<b>Concentraciones PM: </b>", ruta_rapida$PMDIARIO," µg m-3"),
+                              paste0("<b>Exposicion PM: </b>", ruta_rapida$exposicion," µg m-3/h"))
+
+      content_menos_exp<- paste(sep = "<br/>",
+                              paste0("<center><b>Ruta menos exposicion: </b></center>"),
+                              paste0("<b>Duracion: </b>", ruta_menos_exposicion$travelTimeInSeconds," min"),
+                              paste0("<b>Distancia: </b>", ruta_menos_exposicion$lengthInMeters," km"),
+                              paste0("<b>Concentraciones PM: </b>", ruta_menos_exposicion$PMDIARIO," µg m-3"),
+                              paste0("<b>Exposicion PM: </b>", ruta_menos_exposicion$exposicion," µg m-3/h"))
       
+      
+      content_mas_exp <- paste(sep = "<br/>",
+                              paste0("<center><b>Ruta mas rapida: </b></center>"),
+                              paste0("<b>Duracion: </b>", ruta_mas_exposicion$travelTimeInSeconds," min"),
+                              paste0("<b>Distancia: </b>", ruta_mas_exposicion$lengthInMeters," km"),
+                              paste0("<b>Concentraciones PM: </b>", ruta_mas_exposicion$PMDIARIO," µg m-3"),
+                              paste0("<b>Exposicion PM: </b>", ruta_mas_exposicion$exposicion," µg m-3/h"))
+      
+            
       #  --- Categorias grilla
       grilla$categorias = case_when(grilla$PMDIARIO<=12.1 ~ 'Bueno',
                                     grilla$PMDIARIO>12.1 & grilla$PMDIARIO <= 35.4  ~ 'Moderado',
@@ -303,6 +345,9 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
         addPolylines(data = ruta_corta_line,weight = 2,stroke = TRUE,color ="#ae017e",label = "Ruta mas corta",popup=content_corta,group="Ruta mas corta") %>%
         addPolylines(data = ruta_mas_contaminada_line,weight = 2,stroke = TRUE, color ="#00FF66FF",label = "Ruta mas contaminada",popup=content_mas_cont,group="Ruta mas contaminada")%>%
        addPolylines(data = ruta_menos_contaminada_line,weight = 2, color ="#08306b",label = "Ruta menos contaminada",popup=content_menos_cont,group="Ruta menos contaminada")%>%
+         addPolylines(data = ruta_menos_exposicion_line,weight = 2, color ="#016c59",label = "Ruta menos exposicion",popup=content_menos_exp,group="Ruta menos exposicion")%>%
+         addPolylines(data = ruta_mas_exposicion_line,weight = 2, color ="#cc4c02",label = "Ruta mas exposicion",popup=content_mas_exp,group="Ruta mas exposicion")%>%
+         
          addPolygons(data = grilla,color = "#636363" ,
                      group = "Concentraciones",
                      weight = 2,
@@ -317,7 +362,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla,
                    title = "Concentraciones PM2.5 (µg m-3)")%>%
          # Layers control
        addLayersControl(
-         overlayGroups = c("Concentraciones","Ruta menos contaminada", "Ruta mas contaminada", "Ruta mas corta","Ruta mas rapida"))#,
+         overlayGroups = c("Concentraciones","Ruta menos contaminada", "Ruta mas contaminada", "Ruta mas corta","Ruta mas rapida", "Ruta menos exposicion","Ruta mas exposicion"))#,
 
        mapa_alternativas <- mapa
        return(mapa_alternativas)

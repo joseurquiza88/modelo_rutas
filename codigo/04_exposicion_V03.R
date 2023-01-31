@@ -9,7 +9,7 @@
 #
 
 exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentraciones_grilla,key,seleccion,salida_exp,
-                              horario){
+                              horario,calc_meteo =T){
   df_salida <- data.frame()
   rbind_df_1 <- data.frame()
 
@@ -101,6 +101,13 @@ exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentracione
     rbind_ruta_selec<- rbind(rbind_ruta_selec,ruta_seleccionada)
     
     
+  }
+  # ------- Datos de variables meteorologicas
+  if (calc_meteo == T){
+   p<- process_era5 (path='D:/Josefina/Proyectos/ERA/dataset/',lat=NA,long=NA,fecha_ingresada=paste(substr(horario[i],1,5),substr(horario[i],9,10),substr(horario[i],5,7),sep=""))
+    
+  }else{
+    next
   }
   # ------- Variables finales
    #Exposicion total trayecto

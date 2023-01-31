@@ -37,8 +37,8 @@ concentraciones_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grilla_contam
 horas_interes <- "2023-01-19 12:20:00 -03"
 
 # ------------05. Corremos la funcion global
-prueba_alternativas1 <- alternativas_recorridos (origen=origen,destino=destino,modo="Auto", concentraciones_grilla=directorio_grilla,key=key_1,salida = "df",horario = horas_interes)
-prueba_plot <- alternativas_recorridos (origen=origen,destino=destino,modo="Auto", concentraciones_grilla,key=key,salida = "plot",horario = horas_interes)
+prueba_alternativas1 <- alternativas_recorridos (origen=origen,destino=destino,modo="Auto",key=key_1,salida = "df",horario = horas_interes)
+prueba_plot <- alternativas_recorridos (origen=origen,destino=destino,modo="Auto",key=key,salida = "plot",horario = horas_interes)
 prueba_poly3 <- alternativas_recorridos (origen=origen,destino=destino,modo="Auto", concentraciones_grilla,key=key,salida = "polyline",horario = horas_interes)
 prueba_1_plot <- plot_recorridos (origen=origen,destino=destino,modo="Auto", concentraciones_grilla,key=key_2)
 
@@ -66,8 +66,7 @@ key_1 <- "L4P6mCEdDjNejIszYS44dMMlW1n9Imzj" #josefina.backup ok
 key_2 <-"XB3nUS9mmbqwtAoyyPFh0jDAKf20cMOL" # josefina.urquizap OKp
 key_3 <-"TsDPqIWPvjafpmmZMAh5255bziGL1tEA"#jurquicha@gmail.com 
 key_4 <-"2uZZkn5R9YGXTznHS2NPla5ZSJ1NcWbd" #"joseurquiza88"
-key=key_1
-
+key=key_4
 # ------------02. Modos de transporte
 modo = c("Auto","Pie","Auto")
 
@@ -78,21 +77,21 @@ lista_viaje <- data.frame(long =c(-68.789,-68.864,-68.789),
 
 # ------------04. Grilla de contaminacion local. 
 # Contiene las grillas de PM de la salida de CALPUFF
-directorio_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas"
+directorio_grillas <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas"
 
 # ------------05. Tipo de ruta seleccionada
 seleccion <- c("Menos contaminada","Menos contaminada","Menos contaminada")
 
 ## ------------07. Horas de Salida de los sitios de interes
 
-horas_interes<- c("2023-01-20 07:50:00 -03","2023-01-20 13:10:00 -03",
-                  "2023-01-20 16:30:00 -03")
+horas_interes<- c("2023-01-30 07:50:00 -03","2021-01-30 11:10:00 -03",
+                  "2023-01-30 14:30:00 -03")
 
 
-15:22
+
 # ------------07 Corremos la funcion global
-prueba <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,
-                                 seleccion,salida_exp="plot",horario = horas_interes)
+prueba <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grillas ,key,
+                                 seleccion,salida_exp="plot",horario = horas_interes,calc_meteo =T)
 prueba_df <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,
                            seleccion,salida_exp="df",horario = horas_interes)
 
