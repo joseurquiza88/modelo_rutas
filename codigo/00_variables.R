@@ -33,6 +33,8 @@ destino <-"-32.86246,-68.859" #CIENEGUITA
 
 # ------------04. Grilla de contaminacion local
 concentraciones_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grilla_contaminantes/buffer_wgs.shp"#st_read("D:/Josefina/Proyectos/salud/movilidad_7/grilla_contaminantes/buffer_wgs.shp")
+concentraciones_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas/grilla_00.shp"#st_read("D:/Josefina/Proyectos/salud/movilidad_7/grilla_contaminantes/buffer_wgs.shp")
+
 # ------------05. hora de salida
 horas_interes <- "2023-01-19 12:20:00 -03"
 
@@ -68,30 +70,33 @@ key_3 <-"TsDPqIWPvjafpmmZMAh5255bziGL1tEA"#jurquicha@gmail.com
 key_4 <-"2uZZkn5R9YGXTznHS2NPla5ZSJ1NcWbd" #"joseurquiza88"
 key=key_4
 # ------------02. Modos de transporte
-modo = c("Auto","Pie","Auto")
+modo = c("Auto","Auto")#,"Pie")
 
 # ------------03. Lista con Coordenadas de origen-Destino
 
-lista_viaje <- data.frame(long =c(-68.789,-68.864,-68.789),
-                         lat = c(-32.88204,-32.91051,-32.87568))
+lista_viaje <- data.frame(long =c(-68.789,-68.864),#,-68.789),
+                         lat = c(-32.88204,-32.91051))#,-32.87568))
 
 # ------------04. Grilla de contaminacion local. 
 # Contiene las grillas de PM de la salida de CALPUFF
 directorio_grillas <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas"
 
 # ------------05. Tipo de ruta seleccionada
-seleccion <- c("Menos contaminada","Menos contaminada","Menos contaminada")
+seleccion <- c("Menos contaminada","Menos contaminada")#,"Menos contaminada")
 
 ## ------------07. Horas de Salida de los sitios de interes
 
-horas_interes<- c("2023-01-30 07:50:00 -03","2021-01-30 11:10:00 -03",
+horas_interes<- c("2023-01-26 07:50:00 -03","2023-01-26 11:10:00 -03")#,
                   "2023-01-30 14:30:00 -03")
-
+var_interes<- "t2m"
 
 
 # ------------07 Corremos la funcion global
-prueba <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grillas ,key,
-                                 seleccion,salida_exp="plot",horario = horas_interes,calc_meteo =T)
+05:37
+prueba_3 <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grillas ,key,
+                                 seleccion,salida_exp="plot",horario = horas_interes,calc_meteo =T,var_interes)
+
+15:04
 prueba_df <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,
                            seleccion,salida_exp="df",horario = horas_interes)
 
@@ -101,6 +106,6 @@ write.csv(prueba_df,"D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios/pru
 setwd("D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios")
 
 # ------------08 Guardamos el html en la carpeta
-htmlwidgets::saveWidget(prueba, "prueba_plot.html")
+htmlwidgets::saveWidget(prueba_3, "prueba_plot3.html")
 
-# 
+getwd()

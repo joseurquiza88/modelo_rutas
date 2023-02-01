@@ -17,7 +17,7 @@
 busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato_hora){
   #  --- Funcion que busca la grilla (.shp) correspondiente a la hora de interes ingresada
   # La grilla esta ubicada en una carpeta detaeminada
-  grillas_horaria <- function(hora, formato_hora = formato_hora,directorio_grillas){
+  grillas_horaria <- function(hora, formato_hora = formato_hora,directorio_grillas=directorio_grillas){
     hora_ingresada <- as.POSIXct(strptime(hora, format = formato_hora))
     hora_exposicion<- hour(hora_ingresada)
     setwd(directorio_grillas)

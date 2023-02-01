@@ -9,7 +9,8 @@
 #
 
 exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentraciones_grilla,key,seleccion,salida_exp,
-                              horario,calc_meteo =T){
+                              horario,calc_meteo =T,var_interes){
+  print(Sys.time())
   df_salida <- data.frame()
   rbind_df_1 <- data.frame()
 
@@ -104,8 +105,10 @@ exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentracione
   }
   # ------- Datos de variables meteorologicas
   if (calc_meteo == T){
-   p<- process_era5 (path='D:/Josefina/Proyectos/ERA/dataset/',lat=NA,long=NA,fecha_ingresada=paste(substr(horario[i],1,5),substr(horario[i],9,10),substr(horario[i],5,7),sep=""))
-    
+    fecha_interes <- substr(horas_interes[1],1,10)
+    grilla_meteo <- process_era5_grilla(path='D:/Josefina/Proyectos/ERA/dataset/',lat=NA, 
+                                        long = NA, fecha_ingresada = fecha_interes,tipo = "plot",var_interes = var_interes)
+
   }else{
     next
   }
@@ -160,7 +163,8 @@ exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentracione
   id <- c(1:num_rows)
   lista_viaje<- cbind(id , lista_viaje)
   
-  #  --- Categorias grilla
+  #  --- Categorias grillas y paletas de colores
+  # -- Grilla PM
   grilla$categorias = case_when(grilla$PMDIARIO<=12.1 ~ 'Bueno',
                                 grilla$PMDIARIO>12.1 & grilla$PMDIARIO <= 35.4  ~ 'Moderado',
                                 grilla$PMDIARIO >35.4 & grilla$PMDIARIO <= 55.4  ~ 'Insalubre para personas sensibles',
@@ -168,11 +172,25 @@ exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentracione
                                 grilla$PMDIARIO > 150.4 & grilla$PMDIARIO <= 250.4  ~ 'Muy Insalubre',
                                 grilla$PMDIARIO > 250.4 ~ 'Peligroso' )
   
-  #  --- Colores grilla
+  grilla_meteo$categorias = case_when(grilla_meteo$mean<=0~ 'Frio',
+                                      grilla_meteo$mean>0 & grilla_meteo$mean <= 10  ~ 'Fresco',
+                                      grilla_meteo$mean >10 & grilla_meteo$mean <= 20 ~ 'Templado-Fresco',
+                                      grilla_meteo$mean> 20 & grilla_meteo$mean <= 30  ~ 'Templado',
+                                      grilla_meteo$mean > 30 & grilla_meteo$mean <= 40  ~ 'Caluroso',
+                                      grilla_meteo$mean > 40 ~ 'Sofocante' )
+  
+  #  --- Colores grilla PM
   paleta_grilla <- c("#abdda4","#f8fd66","#fdde61","#d74a4c","#b687ba","#590e63")
+
+  paleta_meteo <- c("#225ea8","#f8fd66","#feb24c","#fc4e2a","#bd0026","#800026")
+  
   paleta_ruta <- c("#023858","#49006a","#00441b","#e7298a","#feb24c","#3690c0","#016c59","#8c510a","#f03b20")
   palfac <- colorFactor(paleta_grilla, domain = grilla$categorias)
+  pal_meteo <- colorFactor(paleta_meteo, domain = grilla_meteo$categorias)
   pal <- colorFactor(paleta_ruta, domain = rbind_df_1$i)
+  
+  
+  
   # ---  Plot 
   mapa <- leaflet() %>%
     addTiles() %>%
@@ -186,20 +204,33 @@ exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentracione
                 opacity = 0.1,
                 fillOpacity = 0.5,
                 fillColor = ~palfac(grilla$categorias))%>%
+    addPolygons(data = grilla_meteo,#color = "#636363" ,
+                group = "Meteorologia",
+                weight = 2,
+                smoothFactor = 0.1,
+                opacity = 0.1,
+                fillOpacity = 0.5,
+                fillColor = ~pal_meteo(grilla_meteo$categorias))%>%
     addTiles() %>%
     addControl(title, position = "topleft", className="map-title")%>%
-    addLegend(data = grilla,position = "bottomleft", pal = palfac, values = ~grilla$categorias, 
-              title = "Concentraciones PM2.5 (µg m-3)")%>%
+    addLegend(data = grilla,position = "bottomleft", pal = palfac, values = ~grilla$categorias,
+            title = "Concentraciones PM2.5 (µg m-3)")%>%
+    addLegend(data = grilla_meteo,position = "topleft", pal = pal_meteo, values = ~grilla_meteo$categorias, 
+              title = "Temperatura °C")%>%
+    # Layers control
+    
     # Layers control
     addLayersControl(
-      overlayGroups = c("Concentraciones",c(rbind_df_1$ruta)))#,"Ruta menos contaminada", "Ruta mas contaminada", "Ruta mas corta","Ruta mas rapida"))#,
+    overlayGroups = c("Concentraciones","Meteorologia",c(rbind_df_1$ruta)))#,"Ruta menos contaminada", "Ruta mas contaminada", "Ruta mas corta","Ruta mas rapida"))#,
+  
   
   if (salida_exp == "df"){
     return(rbind_df_1)
+    print(Sys.time())
   }
   if (salida_exp == "plot"){
     return(mapa)
-    
+    print(Sys.time())
   } 
 }
 
