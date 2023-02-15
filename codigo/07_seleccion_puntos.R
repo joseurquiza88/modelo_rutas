@@ -7,6 +7,11 @@ grilla_transform <-st_transform(grilla_shp, crs=32519)
 #Interseccion con distritos
 distritos_shp<- st_read(distritos)
 interseccion_grilla <- st_intersection(distritos_shp,grilla_transform)
+
+# Interseccion con uso del suelo
+suelo <- st_read(uso_suelo,crs=32519)
+interseccion_grilla_suelo <- st_intersection(suelo,interseccion_grilla)
+
 centroide_grilla <- st_centroid(interseccion_grilla )
 # Eleccion distrito destino - origen
 seleccion_distrito_origen <- centroide_grilla[centroide_grilla$DISTRITOS == distrito_origen,]
@@ -27,3 +32,4 @@ return(rbind_df)
 p<-seleccion_origen_destino (distrito_origen= "Ciudad de Godoy Cruz",distrito_destino="Villa Nueva",grilla,distritos)
 distritos<- "D:/Josefina/Proyectos/salud/movilidad_3/procesamiento/auto/shape/distritos_interes.shp"
 grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas/grilla_00.shp"
+uso_suelo <- "D:/Josefina/Proyectos/salud/movilidad_7/shape/zona_lcz/zonifi_19s_v2.shp"
