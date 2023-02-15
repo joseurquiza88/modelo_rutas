@@ -36,7 +36,7 @@ concentraciones_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grilla_contam
 concentraciones_grilla <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas/grilla_00.shp"#st_read("D:/Josefina/Proyectos/salud/movilidad_7/grilla_contaminantes/buffer_wgs.shp")
 
 # ------------05. hora de salida
-horas_interes <- "2023-01-19 12:20:00 -03"
+horas_interes <- "2023-02-09 12:20:00 -03"
 
 # ------------05. Corremos la funcion global
 prueba_alternativas1 <- alternativas_recorridos (origen=origen,destino=destino,modo="Auto",key=key_1,salida = "df",horario = horas_interes)
