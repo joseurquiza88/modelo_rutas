@@ -79,14 +79,15 @@ lista_viaje <- data.frame(long =c(-68.789,-68.864),#,-68.789),
 
 # ------------04. Grilla de contaminacion local. 
 # Contiene las grillas de PM de la salida de CALPUFF
-directorio_grillas <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas"
+#directorio_grillas <- "D:/Josefina/Proyectos/salud/movilidad_7/grillas"
+directorio_grillas <- "D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp"
 
 # ------------05. Tipo de ruta seleccionada
 seleccion <- c("Menos contaminada","Menos contaminada")#,"Menos contaminada")
 
 ## ------------07. Horas de Salida de los sitios de interes
 
-horas_interes<- c("2023-01-26 07:50:00 -03","2023-01-26 11:10:00 -03")#,
+horas_interes<- c("2018-08-05 07:50:00 -03","2018-08-05 11:10:00 -03")#,
                   "2023-01-30 14:30:00 -03")
 var_interes<- "t2m"
 
@@ -95,6 +96,8 @@ var_interes<- "t2m"
 05:37
 prueba_3 <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grillas ,key,
                                  seleccion,salida_exp="plot",horario = horas_interes,calc_meteo =T,var_interes)
+prueba_3 <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grillas ,key,
+                             seleccion,salida_exp="plot",horario = horas_interes)
 
 15:04
 prueba_df <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,

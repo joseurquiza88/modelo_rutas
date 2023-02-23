@@ -9,7 +9,7 @@
 
 
 ##
-alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/salud/movilidad_7/grillas",
+alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp",#"D:/Josefina/Proyectos/salud/movilidad_7/grillas",
                                     key,salida,horario =NULL){
 # ------------             BUSQUEDA DE RECORRIDOS      ---------------- 
 # Busqueda de alternativas segun tom-tom
@@ -177,12 +177,12 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
       dprtrTm<- dataSplit_interseccion[[i]][["dprtrTm"]][1]
       arrvlTm<-dataSplit_interseccion[[i]][["arrvlTm"]][length(dataSplit_interseccion[[i]])]
       PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["PMDIARIO"]],na.rm=T),2)
-      PMHORARIO <- round(mean(dataSplit_interseccion[[i]][["PMHORARIO"]],na.rm=T),2)
+      #PMHORARIO <- round(mean(dataSplit_interseccion[[i]][["PMHORARIO"]],na.rm=T),2)
 
       df <- data.frame(alternativa,PMDIARIO,PMHORARIO,dprtrTm,arrvlTm)
-      names(df) <- c("alternativa","PMDIARIO","PMHORARIO","dprtrTm","arrvlTm")
+      names(df) <- c("alternativa","PMDIARIO","dprtrTm","arrvlTm")#"PMHORARIO"
       suma_df<- rbind(suma_df,df)
-      names(suma_df) <-c("alternativa","PMDIARIO","PMHORARIO","dprtrTm","arrvlTm")
+      names(suma_df) <-c("alternativa","PMDIARIO","dprtrTm","arrvlTm")#"PMHORARIO"
     }
     df_merge <- merge(recorrido,suma_df, #
                       by = "alternativa")
