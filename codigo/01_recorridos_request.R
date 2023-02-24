@@ -159,13 +159,15 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
   # ------------                  ELECCION DE RUTA         ----------------
   #Guardamos la informacion en un .shp temporal
    writeOGR(df2,"./temp","temp", driver="ESRI Shapefile")
-    df3 <- st_read("./temp/temp.shp",quiet = TRUE)
+   df3 <- st_read("./temp/temp.shp",quiet = TRUE)
     #---  Busqueda de la grilla de interes segun el horario ingresado
-    # Datos de CALPUFF guardados localmente
-    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grillas = "D:/Josefina/Proyectos/salud/movilidad_7/grillas",formato_hora="%Y-%m-%dT%H:%M:%S")
+    # Datos de CALPUFF guardados localmente para I == 2 ES VALUUEEE
+    grilla<- busqueda_grilla(hora_inicio = df3$dprtrTm[1],hora_fin=df3$arrvlTm[length(df3$arrvlTm)],directorio_grillas = concentraciones_grilla,formato_hora="%Y-%m-%dT%H:%M:%S")
     interseccion_grilla <- st_intersection(df3,grilla)
-    #print("Archivo eliminado OK")
+
+    #file.remove(file.path("./temp", dir(path="./temp" ,pattern="temp.*")))
     file.remove(file.path("./temp", dir(path="./temp" ,pattern="temp.*")))
+    
     interseccion_grilla%>%
       group_by(altrntv) %>% 
       group_split() -> dataSplit_interseccion
@@ -176,10 +178,12 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
       alternativa<- dataSplit_interseccion[[i]][["altrntv"]][1]
       dprtrTm<- dataSplit_interseccion[[i]][["dprtrTm"]][1]
       arrvlTm<-dataSplit_interseccion[[i]][["arrvlTm"]][length(dataSplit_interseccion[[i]])]
+      #PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["value"]],na.rm=T),2)
+      
       PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["PMDIARIO"]],na.rm=T),2)
       #PMHORARIO <- round(mean(dataSplit_interseccion[[i]][["PMHORARIO"]],na.rm=T),2)
 
-      df <- data.frame(alternativa,PMDIARIO,PMHORARIO,dprtrTm,arrvlTm)
+      df <- data.frame(alternativa,PMDIARIO,dprtrTm,arrvlTm)#,PMHORARIO
       names(df) <- c("alternativa","PMDIARIO","dprtrTm","arrvlTm")#"PMHORARIO"
       suma_df<- rbind(suma_df,df)
       names(suma_df) <-c("alternativa","PMDIARIO","dprtrTm","arrvlTm")#"PMHORARIO"
@@ -415,7 +419,9 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
            alternativa<-dat_agrupado_salida[[p]][["alternativa"]][1]
            tipo <- dat_agrupado_salida[[p]][["tipo"]][1]
            PMDIARIO<-dat_agrupado_salida[[p]][["PMDIARIO"]][1]
-           PMHORARIO<- dat_agrupado_salida[[p]][["PMHORARIO"]][1]
+           # PMHORARIO<- dat_agrupado_salida[[p]][["PMHORARIO"]][1]
+           #PMDIARIO<-dat_agrupado_salida[[p]][["value"]][1]
+
            data_frame_salida <- data.frame(id , origen,destino ,departureTime, 
                                       arrivalTime, lengthInMeters, 
                                       trafficLengthInMeters,travelMode, 
@@ -423,7 +429,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
                                       liveTrafficIncidentsTravelTimeInSeconds,
                                       historicTrafficTravelTimeInSeconds,
                                       noTrafficTravelTimeInSeconds,           
-                                      alternativa, tipo, PMDIARIO, PMHORARIO)
+                                      alternativa, tipo, PMDIARIO)#, PMHORARIO)
            names (data_frame_salida)<- c("id" , "origen","destino" ,"departureTime", 
                                     "arrivalTime", "lengthInMeters", 
                                     "trafficLengthInMeters","travelMode", 
@@ -431,7 +437,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
                                     "liveTrafficIncidentsTravelTimeInSeconds",
                                     "historicTrafficTravelTimeInSeconds",
                                     "noTrafficTravelTimeInSeconds",           
-                                    "alternativa","tipo","PMDIARIO", "PMHORARIO")
+                                    "alternativa","tipo","PMDIARIO")#, "PMHORARIO")
            
            id_df_salida <- rbind(id_df_salida,data_frame_salida)
          }
@@ -441,6 +447,12 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
     return(df2_salida)
 }
 
+#Pruebas
+b<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp",#"D:/Josefina/Proyectos/salud/movilidad_7/grillas",
+                                    key,salida="plot",horario =horas_interes[1])
+  
+c<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp",#"D:/Josefina/Proyectos/salud/movilidad_7/grillas",
+                            key,salida="plot",horario =horas_interes[2])
 
 
 

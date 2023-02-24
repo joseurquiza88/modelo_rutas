@@ -115,7 +115,15 @@ exposicion_total <- function (lista_viaje,tiempo_actividad, modo, concentracione
   exp_tot <- round((mean(c(exp_origen,exp_destino,exp_trayecto), na.rm=T)/60),2)
   rbind_df_1$exp_tot <- exp_tot
   
+  
+  # ------- Calculamos exposiciones por hora  mins VERSION 2
+  exp_origen2 <- sum(rbind_df_1$exp_tot_origen, na.rm=T)
+  exp_trayecto2 <- sum(rbind_df_1$exp_tot_trayecto, na.rm=T)
+  exp_destino2 <- sum (rbind_df_1$exp_tot_destino, na.rm=T)
+  exp_tot2 <- round((sum(c(exp_origen2,exp_destino2,exp_trayecto2), na.rm=T)/60),2)
+  rbind_df_1$exp_tot_sum <- exp_tot2
   rbind_df_1$ruta <- paste("Ruta",rbind_df_1$i,sep=" " )
+  rbind_df_1$modo <- modo
   tiempo_origen_function <- funcion_horas(sum(rbind_df_1$tiempo_destino[max(rbind_df_1$i)]+rbind_df_1$tiempo_origen[!is.na(rbind_df_1$tiempo_origen)]))
   tiempo_trayecto_function <- funcion_horas((sum(rbind_df_1$tiempo_trayecto)))
   tiempo_destino_function <- funcion_horas(sum(rbind_df_1$tiempo_destino[1:(length(rbind_df_1$tiempo_destino)-1)]))

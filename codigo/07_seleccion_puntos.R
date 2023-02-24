@@ -1,3 +1,9 @@
+
+# Funiones que permiten elegir los puntos de origen - destino
+
+##############        --- METODOLOGIA 1 ---         ##############
+##  -- Seleccion de puntos aleatorias considerando o-o, hora, 
+# tipo de actividad, tipo de vehiculo
 seleccion_puntos <- function(distrito_origen){
 
 ##########################################################################
@@ -152,3 +158,67 @@ seleccion_puntos <- function(distrito_origen){
 
 z<-seleccion_puntos(distrito_origen= "Ciudad de Godoy Cruz")
 
+##############        --- METODOLOGIA 2 ---         ##############
+##  -- Seleccion de puntos siendo el centroide del distrito
+
+seleccion_puntos_centride <- function(distrito_origen){
+  
+  ##########################################################################
+  # -- Seleccion punto de origen
+  #Interseccion con distritos
+  
+  distritos_shp<- st_read("D:/Josefina/Proyectos/salud/movilidad_3/procesamiento/auto/shape/distritos_interes.shp")
+  centroide_grilla <- st_centroid(distritos_shp)
+  coords<-st_coordinates(centroide_grilla)
+  centroide_grilla$x_utm <- coords[,1]
+  centroide_grilla$y_utm <- coords[,2]
+  # puntos interes re-proyectados a UTM
+  centroide_trans<-st_transform(centroide_grilla,crs = 4326)
+  coords_wgs<-st_coordinates(centroide_trans)
+  centroide_trans$x <- coords_wgs[,1]
+  centroide_trans$y <- coords_wgs[,2]
+}
+
+##############        --- METODOLOGIA 3 ---         ##############
+##  -- Seleccion de puntos con el pixel con mas poblacion
+
+seleccion_puntos_poblacion <- function(distritos,grilla){
+  rbind_punto_order <-data.frame()
+  distritos_shp<- st_read(distritos)
+  grilla<- st_read(grilla)
+  interseccion_grilla <- st_intersection(distritos_shp,grilla)
+  coords<-st_coordinates(interseccion_grilla)
+  interseccion_grilla$x_utm <- coords[,1]
+  interseccion_grilla$y_utm <- coords[,2]
+  centroide_trans<-st_transform(interseccion_grilla,crs = 4326)
+  coords_wgs<-st_coordinates(centroide_trans)
+  centroide_trans$x <- coords_wgs[,1]
+  centroide_trans$y <- coords_wgs[,2]
+  centroide_trans %>%
+    group_by(DISTRITOS) %>%  #tipo_transp
+    group_split() -> data_total
+  for(x in 1:length(data_total)){
+    df <- data.frame(
+    DISTRITOS = data_total[[x]][["DISTRITOS"]],
+    DPTO = data_total[[x]][["DPTO"]],
+    id = data_total[[x]][["id_1"]],
+    POBLXGRI = data_total[[x]][["POBLXGRI"]],
+    PMDIARIO = data_total[[x]][["PMDIARIO"]],
+    x_utm = data_total[[x]][["x_utm"]],
+    y_utm = data_total[[x]][["y_utm"]],
+    x = data_total[[x]][["x"]],
+    y = data_total[[x]][["y"]],
+    geometry = data_total[[x]][["geometry"]]
+    )
+    df_order <- df[order(df$POBLXGRI), ]
+    punto_order <- df_order[length(df_order$DISTRITOS),]
+    rbind_punto_order <- rbind(rbind_punto_order,punto_order)
+    
+    
+  }
+  return(rbind_punto_order)
+}
+distritos <- "D:/Josefina/Proyectos/salud/movilidad_3/procesamiento/auto/shape/distritos_interes.shp"
+grilla <- "D:/Josefina/Proyectos/salud/movilidad_3/procesamiento/auto/grilla/grilla_utm.shp"
+  
+df <- seleccion_puntos_poblacion(distritos,grilla)
