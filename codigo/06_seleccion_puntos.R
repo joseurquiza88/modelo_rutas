@@ -27,6 +27,7 @@ seleccion_puntos <- function(distrito_origen){
   
   
   # -- Seleccion del numero de actividades
+  # Si num de actividades 1 serian 2 viajes el ida y vuelta
   num_actividades <- sample(c(0,2),1)
   
   
@@ -156,12 +157,13 @@ seleccion_puntos <- function(distrito_origen){
   return(punto_rbind)
 }
 
+#Ejemplo
 z<-seleccion_puntos(distrito_origen= "Ciudad de Godoy Cruz")
 
 ##############        --- METODOLOGIA 2 ---         ##############
 ##  -- Seleccion de puntos siendo el centroide del distrito
 
-seleccion_puntos_centride <- function(distrito_origen){
+seleccion_puntos_centroide <- function(distrito_origen){
   
   ##########################################################################
   # -- Seleccion punto de origen
@@ -222,3 +224,61 @@ distritos <- "D:/Josefina/Proyectos/salud/movilidad_3/procesamiento/auto/shape/d
 grilla <- "D:/Josefina/Proyectos/salud/movilidad_3/procesamiento/auto/grilla/grilla_utm.shp"
   
 df <- seleccion_puntos_poblacion(distritos,grilla)
+
+##############        --- METODOLOGIA 4 ---         ##############
+##  -- Seleccion de datos aleatorios
+datos_aleatorios <- function(num_actividad){
+  num_actividades <- num_actividad
+  act <- sample(c("trabajo","recreacion","otra","educacion"),num_actividades)
+  tipo_transp  <- sample(c("auto","pie","moto","colectivo","bicicleta"),num_actividades+1)
+  
+  # --   Tiempo aleatorio por actividades
+  df_tiempo_act_rbind <- data.frame()
+  for (j in 1:num_actividades){
+    if (act[j] == "trabajo"){ #trabajo 4 - 9hs
+             tiempo_act <- sample(c(240:540),1)
+         }
+    if (act[j] == "recreacion"){ #Recreacion 30 min - 2hs
+             tiempo_act <- sample(c(30:120),1)
+         } 
+    if (act[j] == "otra"){ #Otro 30 - 60 mins
+             tiempo_act <- sample(c(30:60),1)
+       }
+    if (act[j] == "educacion"){ #Escuela 5 - 7hs
+             tiempo_act <- sample(c(300:420),1)
+             }
+    df_tiempo_act <- data.frame(tiempo_act,j)
+    df_tiempo_act_rbind <- rbind(df_tiempo_act_rbind,df_tiempo_act)
+  }
+  # Hora de salida hogar entre las 06-12 hs estos es un datos de las encuestas
+  horario_salida_hogar <- sample(c(360:720),1)
+  
+  df_salida <- c(horario_salida_hogar,tipo_transp,df_tiempo_act_rbind$tiempo_act,act)
+  return(df_salida)
+}
+
+##############        --- METODOLOGIA 5 ---         ##############
+##  -- Seleccion de tiempos actividades aleatorio
+tiempo_act_aleatorios <- function(num_actividad){
+  num_actividades <- num_actividad
+  act <- sample(c("trabajo","recreacion","otra","educacion"),num_actividades)
+  # --   Tiempo aleatorio por actividades
+  df_tiempo_act_rbind <- data.frame()
+  for (j in 1:num_actividades){
+    if (act[j] == "trabajo"){ #trabajo 4 - 9hs
+      tiempo_act <- sample(c(240:540),1)
+    }
+    if (act[j] == "recreacion"){ #Recreacion 30 min - 2hs
+      tiempo_act <- sample(c(30:120),1)
+    } 
+    if (act[j] == "otra"){ #Otro 30 - 60 mins
+      tiempo_act <- sample(c(30:60),1)
+    }
+    if (act[j] == "educacion"){ #Escuela 5 - 7hs
+      tiempo_act <- sample(c(300:420),1)
+    }
+    df_tiempo_act <- data.frame(tiempo_act)
+    df_tiempo_act_rbind <- rbind(df_tiempo_act_rbind,df_tiempo_act)
+  }
+   return(df_tiempo_act_rbind )
+}

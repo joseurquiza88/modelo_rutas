@@ -1,0 +1,99 @@
+---
+title: "Resumen"
+output: html_document
+date: '2023-02-27'
+---
+
+---           RESUMEN DE CODIGOS MODELO DE EXPOSICION    ---
+ Ultima actualizacion funciones
+
+ ---- 
+ 00.-------  00.library: 
+son las librerias necesarias para correr todo el modelo
+
+ ---- 
+ 01.-------  01_recorridos_request:
+ Funcion que permite hacer las request de los recorridos a la API TOM-TOM 
+ segun: i) dia-hora, ii) coordenadas de O-D, iii) modo de transporte.
+ Las salidas son las distintas alternativas de viaje.
+ Las alternativas de viaje pueden ser: i) Mas contaminada, ii)Menos contaminada,
+ iii) Mas Rapida, iii) Mas corta. 
+Ideas de futuro: Con mas emisiones, Menos emisiones, combinacion.
+ El formato de salida puede ser: df, plot, y el shp de los viajes.
+
+ ---- 
+ 02.-------  02_funcion_point-to-line:
+ En este archivo se encuentran dos funciones:
+ - points_to_line: Funcion transformacion de puntos a lineas. Esto es
+ util ya que la salida del request de tom-tom es un df con coordenadas 
+ es decir puntos, y para hacer la interseccion con la grilla necesitamos
+lineas.
+
+ - funcion_horas: Funcion transformacion de minutos a horas
+
+ ---- 
+ 03.-------  03_horas_v2
+Esta funcion permite que al ingresarle 2 fechas distintas una de 
+ inicio y otra final obtenemos la grilla de interes. En el caso que 
+ las horas de las fechas sean distintas por ejemplo:
+ hora_inicio <- "2023-01-19 06:50:00 -03"i
+ hora_fin <- "2023-01-19 09:50:00 -03"
+ La funcion busca las grillas disponibles para ese periodo (06,07,08,09)
+ Y se genera una media pixel a pixel. La salida es un .shp
+
+ ---- 
+ 04.-------  04_exposicion_V04
+Este codigo permite estimar la exposicion total diaria considerando todas
+ las funciones anteriores. La idea es ingresar una lista () de coordenadas 
+ con los puntos de O-D
+ El ultimo viaje siempre sera el hogar, es decir el primer punto ingresado
+Tambien se deben ingresar el modo, el path de donde se encuentren las  grillas de CALPUFF
+ seleccion de la ruta (mas contaminada, mas rapida...) horario salida hogar, 
+ minutos de duracion de cada una de las actividades. Por ultimo,
+ ingrtesar el tipo de salida si es un plot (html), df o un shp
+ Tambien esta la V3 en donde se agregaron datos metereologicos de ERA
+
+
+ ---- 
+ 05.-------  05_coef_outdoor-indoor
+ Este codigo esta vacio pero la idea es ver si se puede agregar
+ algun coeficiente segun la actividad (hogar, trabajo, recreacion..)
+ si esta viajando en vehiculo
+
+ ---- 
+ 06.------- 06_seleccion_puntos
+Es una serie de funciones para elegir los puntos de origen - destino
+ de diferentes formas tales como: 
+ i)Seleccion de puntos aleatorias considerando o-o, hora, tipo de actividad, tipo de vehiculo
+ ii )Seleccion de puntos siendo el centroide del distrito
+ iii) Seleccion de puntos con el pixel con mas poblacion
+ Tambien en este archivo hay una serie de funciones para obtener datos aleatorios de:
+ las actividades, tiempo de actividades, modo,  Hora de salida hogar entre las 06-12 hs estos es un datos de las encuestas,
+ Si bien esta es la funcion 6 se deberia correr antes de la exposicion
+
+ ---- 
+ 07.------- 00_variables_v2
+
+ Por ultimo ponemos a puunto las variables para correr el modelo
+ Las variables a identificar son;
+ lista_viaje: lista () de coordenadas de origen y destino con x-y. 
+     En nuestro caso lo hicimos con la funcion de seleccion de puntos o-d
+     seleccion_puntos_poblacion
+ modo: lista () de los tipos de transporte. Estos pueden ser: "Auto", "Colectivo",
+     "Pie", "Bicicleta", "Moto", "Camion"
+ concentraciones_grilla: direccion donde se encuentran las grillas de CALPUFF.
+     Ojo que luego de la salida del CALPUFF (en formato csv) se le debe hacer un procesamiento
+     como estan en formato punto la pasamos a formato poligono (grilla)
+ key: esta es una contraseña del TOM-TOM, se generaron como 4 cuentas por las dudas
+     No se debe superar las 1500 request por dia en cada una
+ seleccion: Corresponde al tipo de ruta seleccionada. Puede ser:
+     "Mas contaminada,"Menos contaminada","Mas rapida","Mas corta",
+     ""Mas exposicion", "Menos exposicion". 
+ salida_exp: Las salidas del modelo puede ser un df, un plot(html),.shp
+ horario_salida_hogar: Esta es la primera salida del hogar: El formato de este
+       dato es: "2018-08-05 08:36:00 -03"
+ minutosActividades: esto corresponde a los minutos que pasa una persona en
+     destino. En nuestro caso, hicimos una prueba con valores aleatorios,
+      utilizando una de las funciones ubicadas en 06_seleccion_puntos tiempo_act_aleatorios
+     Esto es segun que tipo de actividad 
+

@@ -49,7 +49,19 @@ funcion_horas <- function(minutos){
   entero <- floor(hs_tot)
   decimal <- hs_tot-entero
   mins <- round((decimal*60/1),1)
-  salida <- as.numeric(paste (entero,mins,sep="."))
+  if (entero<=9){
+    entero_2 <- paste("0",entero,sep = "")
+  }else{
+    entero_2<- entero
+  }
+  
+  if (mins<=9){
+    mins_2 <- paste("0",mins,sep = "")
+  }else{
+    mins_2<- mins
+  }
+  salida <- (paste (entero_2,mins_2,sep=":"))
+  
   return (salida)
 }
 

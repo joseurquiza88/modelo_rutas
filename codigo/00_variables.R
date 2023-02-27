@@ -87,8 +87,7 @@ seleccion <- c("Menos contaminada","Menos contaminada")#,"Menos contaminada")
 
 ## ------------07. Horas de Salida de los sitios de interes
 
-horas_interes<- c("2018-08-05 07:50:00 -03","2018-08-05 11:10:00 -03")#,
-                  "2023-01-30 14:30:00 -03")
+horas_interes<- c("2018-08-05 07:50:00 -03","2018-08-05 11:10:00 -03")
 var_interes<- "t2m"
 
 
@@ -100,9 +99,9 @@ prueba_3 <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones
                              seleccion,salida_exp="plot",horario = horas_interes)
 
 15:04
-prueba_df <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grilla,key,
-                           seleccion,salida_exp="df",horario = horas_interes)
-
+prueba_df <- exposicion_total(lista_viaje,tiempo_actividad, modo, concentraciones_grilla=directorio_grillas ,key,
+                             seleccion,salida_exp="df",horario = horas_interes)
+06:29
 #Guardar en en un cv
 write.csv(prueba_df,"D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios/prueba_df_exposicion_V2.csv")
 
@@ -110,5 +109,7 @@ setwd("D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios")
 
 # ------------08 Guardamos el html en la carpeta
 htmlwidgets::saveWidget(prueba_3, "prueba_plot3.html")
+htmlwidgets::saveWidget(prueba_plot2, "prueba_plot6.html")
 
 getwd()
+setwd("D:/Josefina/Proyectos/salud/movilidad_7/")

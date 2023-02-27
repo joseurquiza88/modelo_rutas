@@ -114,6 +114,7 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato
       return(grilla_trayecto)
     }
 }
+
 #Ejemplos
 a<-busqueda_grilla(hora_inicio="2018-08-05 00:50:00 -03",hora_fin=NULL,directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
 a<-grillas_horaria(hora="2018-08-05 23:50:00 -03", formato_hora ="%Y-%m-%d %H:%M:%S",directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp")

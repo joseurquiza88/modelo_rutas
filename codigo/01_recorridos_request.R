@@ -447,7 +447,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
     return(df2_salida)
 }
 
-#Pruebas
+# Ejemplos
 b<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp",#"D:/Josefina/Proyectos/salud/movilidad_7/grillas",
                                     key,salida="plot",horario =horas_interes[1])
   
