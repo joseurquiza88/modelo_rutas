@@ -447,15 +447,30 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
     return(df2_salida)
 }
 
-# Ejemplos
-b<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp",#"D:/Josefina/Proyectos/salud/movilidad_7/grillas",
-                                    key,salida="plot",horario =horas_interes[1])
+########## ------ Ejemplos
+
+origen <-"-32.79679,-68.816" # lat- long
+destino <- "-32.90212,-68.761" # lat- long
+modo <- "Auto"
+concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp"
+horario <- "2018-08-05 07:45:00 -03"
+
+request_df<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla,
+                                    key,salida="df",horario)
   
-c<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp",#"D:/Josefina/Proyectos/salud/movilidad_7/grillas",
-                            key,salida="plot",horario =horas_interes[2])
+request_plot<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla,
+                                       key,salida="plot",horario)
+request_polyline<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla,
+                                           key,salida="polyline",horario)
+# ------------ Guardamos ejemplos
+# Path local
+setwd("D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios")
+# Salida DF
+write.csv(request_df,"./func_alternativas_recorridos_DF.csv")
+# Salida plot
+htmlwidgets::saveWidget(request_plot, "func_alternativas_recorridos_PLOT.html")
 
-
-
-
+# Salida polyline
+writeOGR(request_polyline,".","func_alternativas_recorridos_POLYLINE", driver="ESRI Shapefile")
 
 
