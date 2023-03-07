@@ -84,16 +84,17 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato
       Y_COORD <- data_grilla[[p]][["y"]][1]
       #ALTURA_M_ <- mean(data_grilla[[p]][["ALTURA_M_"]],na.rm = T)
       #PMBICIS <- mean(data_grilla[[p]][["PMBICIS"]],na.rm = T)
-      PMDIARIO<- mean(data_grilla[[p]][["PMDIARIO"]],na.rm = T)
+      #PMDIARIO<- mean(data_grilla[[p]][["PMDIARIO"]],na.rm = T)
+      PMDIARIO<- mean(data_grilla[[p]][["value"]],na.rm = T)
       #PMHORARIO <- mean(data_grilla[[p]][["PMHORARIO"]],na.rm = T)
       geometry <- data_grilla[[p]][["geometry"]][1]
       len <- length(data_grilla[[p]][["geometry"]])
       
       df <- data.frame(GRI1_ID,X_COORD,Y_COORD,PMDIARIO,geometry,len)
       
-      names(df) <- c("GRI1_ID","X_COORD","Y_COORD","PMDIARIO","geometry","len")
+      names(df) <- c("GRI1_ID","X_COORD","Y_COORD","value","geometry","len")
       df_grilla <- rbind(df_grilla ,df)
-      names(df_grilla) <- c("GRI1_ID","X_COORD","Y_COORD","PMDIARIO","geometry","len")
+      names(df_grilla) <- c("GRI1_ID","X_COORD","Y_COORD","value","geometry","len")
     }
 
 
@@ -112,10 +113,10 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato
 
 #---- Ejemplos
 # Solo Hora de inicio
-prueba_busqueda_grilla<-busqueda_grilla(hora_inicio="2018-08-05 00:50:00 -03",hora_fin=NULL,directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
+prueba_busqueda_grilla<-busqueda_grilla(hora_inicio="2018-08-01 12:00:00 -03",hora_fin=NULL,directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
 # Hora de inicio y fin difentes (media) 
 # Esta tarda
-prueba_busqueda_grilla_2<-busqueda_grilla(hora_inicio="2018-08-05 00:50:00 -03",hora_fin="2018-08-05 02:50:00 -03",directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
+prueba_busqueda_grilla_2<-busqueda_grilla(hora_inicio="2018-08-01 00:50:00 -03",hora_fin="2018-08-05 02:50:00 -03",directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
 
 # Hora de inicio y fin iguales
 prueba_busqueda_grilla_3<-busqueda_grilla(hora_inicio="2018-08-05 00:10:00 -03",hora_fin="2018-08-05 00:50:00 -03",directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")

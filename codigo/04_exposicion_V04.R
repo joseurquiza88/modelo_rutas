@@ -98,6 +98,7 @@ exposicion_total <- function (lista_viaje, modo, concentraciones_grilla,key,sele
     punto <- st_read("./temp/temp_punto.shp",quiet = TRUE)
     # Funcion que busca las grillas de los horarios de interes
     grilla <- busqueda_grilla(hora_inicio=hora_llegada,hora_fin=hora_prox_salida ,directorio_grillas=concentraciones_grilla,formato_hora="%Y-%m-%d %H:%M:%S")
+    names(grilla)<- c("GRI1_ID","X_COORD","Y_COORD" , "PMDIARIO" ,"len","geometry")
     interseccion_punto <- st_intersection(punto,grilla)
     conc_destino<- interseccion_punto[interseccion_punto$PMDIARIO == interseccion_punto$PMDIARIO[interseccion_punto$ID == max(interseccion_punto$ID)],]
     conc_destino <- conc_destino$PMDIARIO
@@ -108,6 +109,8 @@ exposicion_total <- function (lista_viaje, modo, concentraciones_grilla,key,sele
       # ------- Datos de concentraciones de O-D puntos EN ORIGEN
       hora_inicial <- paste (substr(hora_llegada,1,10)," 00:00:01 -03",sep="")
       grilla_origen <- busqueda_grilla(hora_inicio=hora_inicial, hora_fin=horario_salida_hogar,directorio_grillas=concentraciones_grilla,formato_hora="%Y-%m-%d %H:%M:%S")
+      names(grilla_origen )<- c("GRI1_ID","X_COORD","Y_COORD" , "PMDIARIO" ,"len","geometry")
+      
       #punto <- st_read("./temp/temp_punto.shp",quiet = TRUE)
       #interseccion_punto_origen <- st_intersection(punto,grilla_origen)
       conc_origen<- interseccion_punto[interseccion_punto$PMDIARIO == interseccion_punto$PMDIARIO[interseccion_punto$ID == min(interseccion_punto$ID)],]
@@ -152,6 +155,7 @@ exposicion_total <- function (lista_viaje, modo, concentraciones_grilla,key,sele
   exp_trayecto2 <- sum(rbind_df_1$exp_tot_trayecto, na.rm=T)
   exp_destino2 <- sum (rbind_df_1$exp_tot_destino, na.rm=T)
   exp_tot2 <- round((sum(c(exp_origen2,exp_destino2,exp_trayecto2), na.rm=T)/60),2)
+  
   rbind_df_1$exp_tot_sum <- exp_tot2
   rbind_df_1$ruta <- paste("Ruta",rbind_df_1$i,sep=" " )
   rbind_df_1$modo <- modo
@@ -182,7 +186,8 @@ exposicion_total <- function (lista_viaje, modo, concentraciones_grilla,key,sele
   #  --- Titulo del mapa
   title <- tags$div(tag.map.title, HTML(paste(sep = "<br/>", 
                                               paste0("<center><b>Estimacion de la exposicion total diaria </b></center>"),
-                                              paste0("<b>Exposicion: </b>",  exp_tot ," µg m-3/h"),
+                                              #paste0("<b>Exposicion: </b>",  exp_tot ," µg m-3/h"),
+                                              paste0("<b>Exposicion: </b>",  exp_tot2 ," µg m-3/h"),
                                               paste0("<b>Tiempo en origen: </b>",  tiempo_origen_function,"hs"),
                                               paste0("<b>Tiempo en actividades: </b>",  tiempo_destino_function ," hs"),
                                               paste0("<b>Tiempo en viaje: </b>",  tiempo_trayecto_function ," hs"))))

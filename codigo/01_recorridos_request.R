@@ -176,17 +176,17 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
       origen <- dataSplit_interseccion[[i]][["origen"]][1]
       destino <- dataSplit_interseccion[[i]][["destino"]][1]
       alternativa<- dataSplit_interseccion[[i]][["altrntv"]][1]
-      dprtrTm<- dataSplit_interseccion[[i]][["dprtrTm"]][1]
-      arrvlTm<-dataSplit_interseccion[[i]][["arrvlTm"]][length(dataSplit_interseccion[[i]])]
-      #PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["value"]],na.rm=T),2)
+      #dprtrTm<- dataSplit_interseccion[[i]][["dprtrTm"]][1]
+      #arrvlTm<-dataSplit_interseccion[[i]][["arrvlTm"]][1]#[length(dataSplit_interseccion[[i]])]
+      PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["value"]],na.rm=T),2)
       
-      PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["PMDIARIO"]],na.rm=T),2)
+      #PMDIARIO <- round(mean(dataSplit_interseccion[[i]][["PMDIARIO"]],na.rm=T),2)
       #PMHORARIO <- round(mean(dataSplit_interseccion[[i]][["PMHORARIO"]],na.rm=T),2)
 
-      df <- data.frame(alternativa,PMDIARIO,dprtrTm,arrvlTm)#,PMHORARIO
-      names(df) <- c("alternativa","PMDIARIO","dprtrTm","arrvlTm")#"PMHORARIO"
+      df <- data.frame(alternativa,PMDIARIO)#,dprtrTm,arrvlTm)#,PMHORARIO
+      names(df) <- c("alternativa","PMDIARIO")#,"dprtrTm","arrvlTm")#"PMHORARIO"
       suma_df<- rbind(suma_df,df)
-      names(suma_df) <-c("alternativa","PMDIARIO","dprtrTm","arrvlTm")#"PMHORARIO"
+      names(suma_df) <-c("alternativa","PMDIARIO")#,"dprtrTm","arrvlTm")#"PMHORARIO"
     }
     df_merge <- merge(recorrido,suma_df, #
                       by = "alternativa")
@@ -217,7 +217,7 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
     # ------------ 0.6 Balanceada - tiempo - contaminacion
     #ruta_balanceada <- recorrido[(recorrido$PMDIARIO == min(recorrido$PMDIARIO)) && (recorrido$liveTrafficIncidentsTravelTimeInSeconds == min(recorrido$travelTimeInSeconds)) ,]
     #ruta_balanceada$tipo <- "Balanceada"
-    
+    # ------------ 0.7 Mas emisiones - Menos emisiones
   # Aparecen 2 warnings no darle importancia!
     df_salida <- data.frame()
     # ------- SALIDA DF
@@ -451,11 +451,13 @@ alternativas_recorridos <- function(origen,destino,modo,concentraciones_grilla="
 
 origen <-"-32.79679,-68.816" # lat- long
 destino <- "-32.90212,-68.761" # lat- long
+
+
 modo <- "Auto"
 concentraciones_grilla="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp"
-horario <- "2018-08-05 07:45:00 -03"
+horario <- "2018-08-01 07:50:00 -03"
 
-request_df<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla,
+request_df2<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla,
                                     key,salida="df",horario)
   
 request_plot<-alternativas_recorridos (origen,destino,modo,concentraciones_grilla,
@@ -473,4 +475,6 @@ htmlwidgets::saveWidget(request_plot, "func_alternativas_recorridos_PLOT.html")
 # Salida polyline
 writeOGR(request_polyline,".","func_alternativas_recorridos_POLYLINE", driver="ESRI Shapefile")
 
-
+# Salida puntos request tom-tom
+prueba_recorrido_tomtom<-recorridos_tomtom(origen,destino,modo,horario_recorrido=horario)
+write.csv(prueba_recorrido_tomtom,"./prueba_recorrido_tomtom.csv")
